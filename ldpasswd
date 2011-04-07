@@ -1,0 +1,71 @@
+#!/usr/local/bin/ruby
+
+require 'ldap'
+require 'base64'
+require 'digest'
+require 'password' # ruby-password
+
+SERVER = 'ldap.example.com'
+DN     = 'dc=example,dc=com'
+OU     = 'people'
+
+# get the new password, check it, and create a salted hash from it
+def get_password
+	pwd1 = Password.get("New Password: ")
+	pwd2 = Password.get("Retype New Password: ")
+
+	begin
+		raise if pwd1 != pwd2
+		rescue
+			print "ERROR: Password mismatch!\n"
+			exit
+	end
+
+	begin
+		pwd1.check # check password strength
+		rescue
+			print "ERROR: Password strength check failed: " + $! + "\n"
+			exit
+	end
+
+	salt = rand.to_s.gsub(/0\./, '')
+	pass = pwd1.to_s
+	hash = "{SSHA}"+Base64.encode64(Digest::SHA1.digest("#{pass}#{salt}")+salt).chomp!
+	return hash
+end
+
+if ARGV.length == 1
+	if Process.uid != 0
+		print "ERROR: Must be root to change an arbitrary user's password!\n"
+		exit
+	end	
+	uid = ARGV[0]
+
+	bind_user = "cn=admin,#{DN}"
+	bind_pw   = Password.get("Admin Password: ")
+else
+	uid = ENV['USER']
+
+	bind_user = "uid=#{uid},ou=#{OU},#{DN}"
+	bind_pw   = Password.get("Old Password: ")
+end
+
+luser = "uid=#{uid},ou=#{OU},#{DN}"
+
+newp = get_password
+
+# We'll just replace it.  That we can bind proves that we either know
+# the old password or are an admin.
+
+replace = LDAP::Mod.new(LDAP::LDAP_MOD_REPLACE | LDAP::LDAP_MOD_BVALUES,
+		"userPassword", [newp])
+
+conn = LDAP::Conn.new(SERVER, 389)
+conn.set_option(LDAP::LDAP_OPT_PROTOCOL_VERSION, 3)
+begin
+	conn.bind(bind_user, bind_pw)
+	rescue
+		print "ERROR: Incorrect password\n"
+		exit
+end
+conn.modify(luser, [replace])

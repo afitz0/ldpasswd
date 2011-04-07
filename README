@@ -1,0 +1,12 @@
+ldpasswd is a simple utility to emulate the behavior of FreeBSD's passwd, which
+does not (as of this writing) have support for interacting with LDAP.
+
+The original script is located within the FreeBSD handbook here:
+	http://www.freebsd.org/doc/en/articles/ldap-auth/client.html#CHPW-RUBY
+
+The addendum in the handbook should also be kept in mind here:
+	Although not guaranteed to be free of security holes (the password is kept
+	in memory, for example) this is cleaner and more flexible than a simple sh
+	script.
+
+Type `make help` to see the man page, which outlines the basic usage.

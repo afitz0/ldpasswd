@@ -1,0 +1,41 @@
+.TH ldpasswd 1  "October 17, 2010" "version 1.0" "USER COMMANDS"
+.SH NAME
+ldpasswd \-\- change a user's LDAP password
+.SH SYNOPSIS
+.B ldpasswd
+[user]
+.SH DESCRIPTION
+ldpasswd is a utility, written in Ruby, used to change a given user's password.
+If no user name is given, the current user is used. Specifying a user requires
+superuser privileges.
+.PP
+If changing the current user's password, you will be prompted for the old
+password followed by the new password twice (for confirmation). If changing
+another user's password, you will only be prompted for the new password.
+.SH OPTIONS
+.TP
+[user]
+Optionally specify which user's password to change
+.SH EXAMPLES
+.TP
+Change the current user's password:
+.B ldpasswd
+.PP
+.TP
+Change bob's password:
+.B ldpasswd
+bob
+.PP
+.SH IMPLEMENTATION NOTES
+.PP
+ldpasswd attempts to make a non-SSL connection to the LDAP server. If your
+LDAP environment requires SSL, you will need to make the appropriate change
+in the script.
+.SH NOTES
+The original version of the ldpasswd script came from the FreeBSD handbook:
+.PP
+http://www.freebsd.org/doc/en/articles/ldap-auth/client.html#CHPW-RUBY
+.SH SEE ALSO
+passwd(1)
+.SH AUTHOR
+This manual page written by Andrew Fitz Gibbon <fitz@cs.earlham.edu>.
